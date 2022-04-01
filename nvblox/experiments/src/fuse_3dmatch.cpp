@@ -41,7 +41,12 @@ DEFINE_int32(esdf_frame_subsampling, 0,
              "How much to subsample the ESDF integration by.");
 
 int main(int argc, char* argv[]) {
-  gflags::ParseCommandLineFlags(&argc, &argv, true);
+#ifdef GFLAGS_NAMESPACE
+    GFLAGS_NAMESPACE::ParseCommandLineFlags(&argc, &argv, true);
+#else
+    google::ParseCommandLineFlags(&argc, &argv, true);
+#endif
+
   google::InitGoogleLogging(argv[0]);
   FLAGS_alsologtostderr = true;
   google::InstallFailureSignalHandler();

@@ -50,7 +50,11 @@ class ProjectiveTsdfIntegratorExperiment : public ProjectiveTsdfIntegrator {
 };
 
 int main(int argc, char* argv[]) {
-  gflags::ParseCommandLineFlags(&argc, &argv, true);
+#ifdef GFLAGS_NAMESPACE
+    GFLAGS_NAMESPACE::ParseCommandLineFlags(&argc, &argv, true);
+#else
+    google::ParseCommandLineFlags(&argc, &argv, true);
+#endif
   FLAGS_alsologtostderr = true;
   google::InstallFailureSignalHandler();
 
