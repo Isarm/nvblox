@@ -44,7 +44,8 @@ if(NOT Glog_FOUND)
     find_package(Glog REQUIRED)
 endif()
 # TODO(alexmillane): check the ROS builds here.
-find_package(gflags REQUIRED)
+find_package(gflags REQUIRED PATHS /usr/lib/x86_64-linux-gnu/cmake/gflags)
+
 
 # Include dirs
 include_directories(${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
