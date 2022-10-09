@@ -36,7 +36,7 @@ std::pair<Vector3f, Vector2f> getRandomVisibleRayAndImagePoint(
                      test_utils::randomFloatInRange(
                          0.0f, static_cast<float>(camera.height() - 1)));
   // Normalized ray
-  return {camera.rayFromImagePlaneCoordinates(u_C).normalized(), u_C};
+  return {camera.vectorFromImagePlaneCoordinates(u_C).normalized(), u_C};
 }
 
 Camera getTestCamera() {
@@ -146,12 +146,12 @@ TEST(CameraTest, AxisAlignedBoundingBox) {
 
   // Rays through the corners of the image plane
   const Vector3f ray_0_C =
-      camera.rayFromImagePlaneCoordinates(Vector2f(0.0f, 0.0f));
+      camera.vectorFromImagePlaneCoordinates(Vector2f(0.0f, 0.0f));
   const Vector3f ray_2_C =
-      camera.rayFromImagePlaneCoordinates(Vector2f(0.0f, camera.height()));
+      camera.vectorFromImagePlaneCoordinates(Vector2f(0.0f, camera.height()));
   const Vector3f ray_1_C =
-      camera.rayFromImagePlaneCoordinates(Vector2f(camera.width(), 0.0f));
-  const Vector3f ray_3_C = camera.rayFromImagePlaneCoordinates(
+      camera.vectorFromImagePlaneCoordinates(Vector2f(camera.width(), 0.0f));
+  const Vector3f ray_3_C = camera.vectorFromImagePlaneCoordinates(
       Vector2f(camera.width(), camera.height()));
 
   // Generate a random depths
@@ -342,6 +342,30 @@ TEST(CameraTest, FrustumAtLeastOneValidVoxelTest) {
   }
   // At MOST 3% empty on the corners.
   EXPECT_LE(static_cast<float>(empty) / block_indices_in_frustum.size(), 0.03);
+}
+
+TEST(CameraTest, UnProjectionTest) {
+  Camera camera = getTestCamera();
+
+  constexpr int kNumPointsToTest = 1000;
+  for (int i = 0; i < kNumPointsToTest; i++) {
+    // Random point and depth
+    auto vector_image_point_pair = getRandomVisibleRayAndImagePoint(camera);
+    Vector2f u_C_in = vector_image_point_pair.second;
+    const float depth = test_utils::randomFloatInRange(0.1f, 10.0f);
+
+    // Unproject
+    const Vector3f p_C = camera.unprojectFromImagePlaneCoordinates(u_C_in, depth);
+    EXPECT_NEAR(p_C.z(), depth, kFloatEpsilon);
+
+    // Re-project  
+    Vector2f u_C_out;
+    EXPECT_TRUE(camera.project(p_C, &u_C_out));
+
+    // Check
+    EXPECT_NEAR(u_C_in.x(), u_C_out.x(), kFloatEpsilon);
+    EXPECT_NEAR(u_C_in.y(), u_C_out.y(), kFloatEpsilon);
+  }
 }
 
 int main(int argc, char** argv) {
